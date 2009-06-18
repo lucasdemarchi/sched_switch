@@ -64,6 +64,9 @@ print_help (const char *programname)
   printf ("       -p  : print priority inheritance lines\n");
   printf ("       -s  : print max scheduling delay\n");
   printf ("       -h  : print this help\n");
+  printf ("Parameters: \n");
+  printf ("       input: filename or \"-\" to read from stdin\n");
+  printf ("       output: filename or \"-\" to write to stdout\n");
   exit (1);
 }
 
@@ -80,8 +83,8 @@ main (int argc, char **argv)
   unsigned int j;
   unsigned int n;
   unsigned int last_comment = 0;
-  FILE *fpi;
-  FILE *fpo;
+  FILE *fpi=0;
+  FILE *fpo=0;
   unsigned int max_cpu = 0;
   unsigned int last_max_cpu = 0;
   unsigned int *first = NULL;
@@ -118,21 +121,32 @@ main (int argc, char **argv)
     if (argv[i][0] == '-') {
       switch (argv[i][1]) {
       case 'm':
-	output = MATLAB;
-	break;
+	      output = MATLAB;
+	      break;
       case 'v':
-	output = VCD;
-	break;
+      	output = VCD;
+      	break;
       case 'p':
-	priority_inheritance = 1;
-	break;
+      	priority_inheritance = 1;
+      	break;
       case 's':
-	max_sched_delay = 1;
-	break;
+      	max_sched_delay = 1;
+      	break;
       case 'h':
       default:
-	print_help (argv[0]);
-	return (0);
+      	if(strlen(argv[i])==1 && infilename == NULL){
+          infilename=argv[i];
+          fpi = stdin;
+        }
+        else if (strlen(argv[i])==1 && outfilename == NULL){
+          outfilename=argv[i];
+          fpo = stdout;
+	}
+	else{
+      	  print_help (argv[0]);
+      	  return (0);
+        }
+
       }
     }
     else if (infilename == NULL) {
@@ -146,15 +160,19 @@ main (int argc, char **argv)
     print_help (argv[0]);
     return (0);
   }
-  fpi = fopen (infilename, "r");
-  if (fpi == NULL) {
-    fprintf (stderr, "Cannot open filename %s\n", infilename);
-    return 1;
+  if (!fpi){
+    fpi = fopen (infilename, "r");
+    if (fpi == NULL) {
+      fprintf (stderr, "Cannot open filename %s\n", infilename);
+      return 1;
+    }
   }
-  fpo = fopen (outfilename, "w");
-  if (fpo == NULL) {
-    fprintf (stderr, "Cannot create filename %s\n", outfilename);
-    return 1;
+  if (!fpo){
+    fpo = fopen (outfilename, "w");
+    if (fpo == NULL) {
+      fprintf (stderr, "Cannot create filename %s\n", outfilename);
+      return 1;
+    }
   }
   while (fgets (line, sizeof (line), fpi) != NULL) {
     if (line[0] == '#') {
