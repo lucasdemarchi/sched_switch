@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <libgen.h>
+
 #include <string.h>
 
 #define VERSION "0.1"
@@ -55,7 +57,7 @@ typedef struct program_struct
 } program_type;
 
 static void
-print_help (const char *programname)
+print_help (char *programname)
 {
   printf ("Program %s version "VERSION"\n", basename(programname));
   printf ("Usage: %s [options] input output\n", programname);
